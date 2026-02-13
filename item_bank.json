@@ -1,0 +1,422 @@
+[
+  {
+    "question": "If all cats are mammals and some mammals are pets, what can you conclude?",
+    "options": [
+      "All pets are cats",
+      "Some pets are cats",
+      "No pets are cats",
+      "All mammals are cats"
+    ],
+    "correct": 1,
+    "a": 0.5,
+    "b": 0.9244558495101065,
+    "c": 0.3
+  },
+  {
+    "question": "What comes next: 2, 4, 8, 16, ...?",
+    "options": ["32", "24", "18", "20"],
+    "correct": 0,
+    "a": 0.5,
+    "b": 2.3132363379129868,
+    "c": 0.3
+  },
+  {
+    "question": "A bat and a ball cost $1.10 total. The bat costs $1 more than the ball. How much is the ball?",
+    "options": ["$0.05", "$0.10", "$0.50", "$1.00"],
+    "correct": 0,
+    "a": 0.5,
+    "b": 0.9494558495101065,
+    "c": 0.3
+  },
+  {
+    "question": "If A is taller than B, and B is taller than C, who is shortest?",
+    "options": ["A", "B", "C", "Cannot tell"],
+    "correct": 2,
+    "a": 4.0,
+    "b": 0.1968939549763301,
+    "c": 0.1
+  },
+  {
+    "question": "All roses are flowers. Some flowers fade quickly. Therefore:",
+    "options": [
+      "All roses fade quickly",
+      "Some roses fade quickly",
+      "No roses fade quickly",
+      "Cannot tell"
+    ],
+    "correct": 3,
+    "a": 0.5,
+    "b": 2.2999030045796536,
+    "c": 0.3
+  },
+  {
+    "question": "What number is opposite 3 on a standard die?",
+    "options": ["1", "2", "4", "6"],
+    "correct": 3,
+    "a": 0.9338532623806329,
+    "b": -0.38184528449591815,
+    "c": 0.1
+  },
+  {
+    "question": "If \"no dogs are cats\" is true, which must be false?",
+    "options": [
+      "Some dogs are cats",
+      "All dogs are cats",
+      "No cats are dogs",
+      "Some cats are dogs"
+    ],
+    "correct": 1,
+    "a": 4.0,
+    "b": -0.2469125846936358,
+    "c": 0.1
+  },
+  {
+    "question": "In a race, you pass the person in second place. What place are you in now?",
+    "options": ["First", "Second", "Third", "Cannot tell"],
+    "correct": 1,
+    "a": 1.7499800184761893,
+    "b": -0.041500142499823325,
+    "c": 0.16538300558658753
+  },
+  {
+    "question": "A farmer has 17 sheep, all but 9 die. How many left?",
+    "options": ["8", "9", "17", "0"],
+    "correct": 1,
+    "a": 4.0,
+    "b": -0.39858365247578914,
+    "c": 0.1
+  },
+  {
+    "question": "What is the next in series: J, F, M, A, M, J, ...?",
+    "options": ["J", "A", "S", "O"],
+    "correct": 0,
+    "a": 4.0,
+    "b": 1.5684589679679324,
+    "c": 0.3
+  },
+  {
+    "question": "If 5 machines make 5 widgets in 5 minutes, how long for 100 machines to make 100 widgets?",
+    "options": ["100 min", "5 min", "20 min", "1 min"],
+    "correct": 1,
+    "a": 0.5,
+    "b": 0.7209972253769861,
+    "c": 0.3
+  },
+  {
+    "question": "Brothers and sisters have I none, but that man's father is my father's son. Who is \"that man\"?",
+    "options": ["My brother", "My son", "My father", "Myself"],
+    "correct": 1,
+    "a": 0.5689004963217105,
+    "b": -0.007098261291444108,
+    "c": 0.1
+  },
+  {
+    "question": "What weighs more: a pound of feathers or a pound of bricks?",
+    "options": ["Feathers", "Bricks", "Same", "Neither"],
+    "correct": 2,
+    "a": 4.0,
+    "b": -0.6442677615899605,
+    "c": 0.1
+  },
+  {
+    "question": "If P implies Q, and Q is false, what about P?",
+    "options": ["True", "False", "Either", "Cannot tell"],
+    "correct": 1,
+    "a": 0.5,
+    "b": -0.642239199975529,
+    "c": 0.3
+  },
+  {
+    "question": "Arrange: 8 2 7 3 in ascending order.",
+    "options": ["2 3 7 8", "3 2 7 8", "2 7 3 8", "8 7 3 2"],
+    "correct": 0,
+    "a": 4.0,
+    "b": 1.5059858374186426,
+    "c": 0.1
+  },
+  {
+    "question": "If all As are Bs, no Bs are Cs, then no As are Cs. True or false?",
+    "options": ["True", "False", "Depends", "Cannot tell"],
+    "correct": 0,
+    "a": 2.828067178663144,
+    "b": 3.0,
+    "c": 0.1
+  },
+  {
+    "question": "What is the missing number: 1, 4, 9, 16, ?, 36",
+    "options": ["20", "25", "30", "49"],
+    "correct": 1,
+    "a": 4.0,
+    "b": -0.7131393274790971,
+    "c": 0.1
+  },
+  {
+    "question": "A doctor gives you 3 pills and says take one every half hour. How long do they last?",
+    "options": ["1 hour", "1.5 hours", "3 hours", "2 hours"],
+    "correct": 0,
+    "a": 0.5,
+    "b": -0.8684744806150249,
+    "c": 0.3
+  },
+  {
+    "question": "If some cats are black, and all black things are coal, are some cats coal?",
+    "options": ["Yes", "No", "Maybe", "Cannot tell"],
+    "correct": 3,
+    "a": 3.9999999999999996,
+    "b": -0.5012294688884383,
+    "c": 0.1
+  },
+  {
+    "question": "What letter comes next: O T T F F S S ...?",
+    "options": ["E", "T", "F", "S"],
+    "correct": 0,
+    "a": 4.0,
+    "b": 0.9600882330805198,
+    "c": 0.28595784122806767
+  },
+  {
+    "question": "What comes next: 1, 1, 2, 3, 5, 8, ...?",
+    "options": ["13", "11", "10", "9"],
+    "correct": 0,
+    "a": 4.0,
+    "b": 0.26981494657161187,
+    "c": 0.1
+  },
+  {
+    "question": "If no birds are mammals, and all eagles are birds, are eagles mammals?",
+    "options": ["Yes", "No", "Maybe", "Cannot tell"],
+    "correct": 1,
+    "a": 0.5,
+    "b": -2.9333333333333336,
+    "c": 0.3
+  },
+  {
+    "question": "A man builds a house with four sides, each of southern exposure. A bear walks by. What color is the bear?",
+    "options": ["Black", "Brown", "White", "Gray"],
+    "correct": 2,
+    "a": 4.0,
+    "b": 0.1419296292725652,
+    "c": 0.21684288212696254
+  },
+  {
+    "question": "How many months have 28 days?",
+    "options": ["1", "2", "All", "None"],
+    "correct": 2,
+    "a": 0.5474941896526659,
+    "b": -1.6053933110975234,
+    "c": 0.1
+  },
+  {
+    "question": "If you have three apples and take away two, how many do you have?",
+    "options": ["1", "2", "3", "0"],
+    "correct": 1,
+    "a": 0.5,
+    "b": 2.253268171722893,
+    "c": 0.3
+  },
+  {
+    "question": "What is the next: A, Z, B, Y, C, X, ...?",
+    "options": ["D, W", "E, V", "F, U", "G, T"],
+    "correct": 0,
+    "a": 3.9999999999988383,
+    "b": 0.2873833923567758,
+    "c": 0.3
+  },
+  {
+    "question": "Some months have 31 days, others 30. How many have 28?",
+    "options": ["1", "All", "None", "Varies"],
+    "correct": 1,
+    "a": 3.2239230292751437,
+    "b": -1.2183773650050248e-5,
+    "c": 0.1
+  },
+  {
+    "question": "If all Wibbles are Wobbles, and no Wobbles are Wubbles, can Wibbles be Wubbles?",
+    "options": ["Yes", "No", "Maybe", "Cannot tell"],
+    "correct": 1,
+    "a": 0.5,
+    "b": 0.8744556443925635,
+    "c": 0.3
+  },
+  {
+    "question": "What word is spelled incorrectly in every dictionary?",
+    "options": ["Incorrectly", "Dictionary", "Spelled", "Word"],
+    "correct": 0,
+    "a": 2.7083244600852434,
+    "b": -0.6363727139867923,
+    "c": 0.1
+  },
+  {
+    "question": "If a plane crashes on the border of the US and Canada, where do they bury the survivors?",
+    "options": ["US", "Canada", "Border", "Nowhere"],
+    "correct": 3,
+    "a": 0.5,
+    "b": 1.2759008404713912,
+    "c": 0.3
+  },
+  {
+    "question": "What comes next: 3, 6, 9, 12, ...?",
+    "options": ["15", "18", "21", "24"],
+    "correct": 0,
+    "a": 1.6098478269113397,
+    "b": 0.06808612417486665,
+    "c": 0.3
+  },
+  {
+    "question": "A rooster lays an egg on a roof. Which way does it roll?",
+    "options": ["Left", "Right", "Down", "Roosters don't lay eggs"],
+    "correct": 3,
+    "a": 1.2724124292705394,
+    "b": -0.1385794474547941,
+    "c": 0.1
+  },
+  {
+    "question": "How many animals did Moses take on the ark?",
+    "options": ["2 of each", "None", "All", "7 pairs"],
+    "correct": 1,
+    "a": 4.0,
+    "b": 0.6251405819022169,
+    "c": 0.3
+  },
+  {
+    "question": "If Q implies not R, and R is true, what about Q?",
+    "options": ["True", "False", "Either", "Cannot tell"],
+    "correct": 1,
+    "a": 0.9285906856390213,
+    "b": -0.6497458173411912,
+    "c": 0.1
+  },
+  {
+    "question": "What is the missing: 2, 3, 5, 7, 11, ...?",
+    "options": ["13", "15", "17", "19"],
+    "correct": 0,
+    "a": 0.6030431433965526,
+    "b": -0.8003474130323849,
+    "c": 0.1
+  },
+  {
+    "question": "If some A are B, and some B are C, are some A C?",
+    "options": ["Yes", "No", "Maybe", "Cannot tell"],
+    "correct": 3,
+    "a": 0.5,
+    "b": 0.5744558495101019,
+    "c": 0.3
+  },
+  {
+    "question": "What can you hold in your right hand but not in your left?",
+    "options": ["Your left hand", "A book", "Water", "Air"],
+    "correct": 0,
+    "a": 3.5283202228809247,
+    "b": -0.019820449138688107,
+    "c": 0.22395583731639276
+  },
+  {
+    "question": "If today is Monday, what is the day after the day before yesterday?",
+    "options": ["Sunday", "Monday", "Tuesday", "Wednesday"],
+    "correct": 1,
+    "a": 4.0,
+    "b": 0.4642881542616247,
+    "c": 0.3
+  },
+  {
+    "question": "A man pushes his car to a hotel and loses his fortune. What happened?",
+    "options": ["Robbed", "Monopoly game", "Accident", "Towed"],
+    "correct": 1,
+    "a": 1.0012840636489315,
+    "b": -0.7793360883043823,
+    "c": 0.1
+  },
+  {
+    "question": "What has keys but can't open locks?",
+    "options": ["Piano", "Map", "Door", "Computer"],
+    "correct": 0,
+    "a": 0.5,
+    "b": -0.10872324849772246,
+    "c": 0.3
+  },
+  {
+    "question": "If all reds are blues, some blues are greens, are some reds greens?",
+    "options": ["Yes", "No", "Maybe", "Cannot tell"],
+    "correct": 3,
+    "a": 0.5,
+    "b": 3.0,
+    "c": 0.3
+  },
+  {
+    "question": "What comes next: 1, 8, 27, 64, ...?",
+    "options": ["125", "100", "81", "121"],
+    "correct": 0,
+    "a": 0.5,
+    "b": -2.0065158493304516,
+    "c": 0.3
+  },
+  {
+    "question": "How can you drop a raw egg onto a concrete floor without cracking it?",
+    "options": [
+      "Carefully",
+      "From low",
+      "Concrete doesn't crack",
+      "Impossible"
+    ],
+    "correct": 2,
+    "a": 0.5,
+    "b": 2.2532681717228904,
+    "c": 0.3
+  },
+  {
+    "question": "If not P implies Q, and not Q, what about P?",
+    "options": ["True", "False", "Either", "Cannot tell"],
+    "correct": 0,
+    "a": 0.5,
+    "b": 1.9960133829494744,
+    "c": 0.3
+  },
+  {
+    "question": "What is the next letter: W, T, N, L, I, T, ...?",
+    "options": ["F", "S", "W", "A"],
+    "correct": 3,
+    "a": 4.0,
+    "b": 0.46665503336211367,
+    "c": 0.1
+  },
+  {
+    "question": "A woman has two sons born on the same day but not twins. How?",
+    "options": ["Triplets", "Adopted", "Different years", "Impossible"],
+    "correct": 0,
+    "a": 0.5,
+    "b": 2.763236087494598,
+    "c": 0.3
+  },
+  {
+    "question": "What has a head, a tail, but no body?",
+    "options": ["Coin", "Snake", "River", "Cloud"],
+    "correct": 0,
+    "a": 0.5,
+    "b": -0.3404694600128575,
+    "c": 0.3
+  },
+  {
+    "question": "If A or B, and not A, then B. True or false?",
+    "options": ["True", "False", "Depends", "Cannot tell"],
+    "correct": 0,
+    "a": 4.0,
+    "b": -0.05070498485714814,
+    "c": 0.13335106039788813
+  },
+  {
+    "question": "What comes next: 5, 10, 15, 20, ...?",
+    "options": ["25", "30", "35", "40"],
+    "correct": 0,
+    "a": 4.0,
+    "b": -0.5000116858218167,
+    "c": 0.1
+  },
+  {
+    "question": "The more you take, the more you leave behind. What are they?",
+    "options": ["Memories", "Footsteps", "Time", "Money"],
+    "correct": 1,
+    "a": 0.6427982018546898,
+    "b": -0.9153939814630891,
+    "c": 0.1
+  }
+]

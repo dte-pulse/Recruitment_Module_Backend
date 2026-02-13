@@ -1,0 +1,67 @@
+make sure  http://localhost:5173 are access from the .env file and also app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
+)//here i just give the cors access to one endpointof local host as same the above url that too from the .env file and all the tockens urls are get access from the .env only
+
+
+
+
+Public Endpoints (No Auth Required)
+GET / (Root)
+GET /jobs
+GET /jobs/{job_id}
+POST /jobs 
+POST /applications
+POST /upload-to-s3
+POST /cat/start
+POST /cat/next-item
+POST /cat/submit-answer
+POST /cat/complete
+PUT /start-exam/{email}/{hr_video_exam_key}
+POST /video-responses/batch
+POST /exam/validate 
+POST /applications/upload-resume 
+POST /gemini/chat/ 
+POST /auth/login 
+Protected Endpoints (Admin Only)
+The following will receive Depends(auth.get_current_admin):
+
+PUT /jobs/{job_id}
+DELETE /jobs/{job_id}
+PUT /applications/bulk-status-simple
+GET /jobs/{job_id}/applications
+GET /applications
+GET /applications/{application_id}
+PUT /applications/{application_id}
+DELETE /applications/{application_id}
+PUT /applications/{application_id}/status
+GET /cat-items
+GET /cat-items/{item_id}
+POST /cat-items
+PUT /cat-items/{item_id}
+DELETE /cat-items/{item_id}
+POST /cat/upload-questions
+GET /video-questions
+GET /video-questions/{question_id}
+POST /video-questions
+PUT /video-questions/{question_id}
+DELETE /video-questions/{question_id}
+POST /video-questions/upload
+GET /jobs/{job_id}/video-questions
+POST /job-video-questions
+POST /video-responses 
+PUT /video-responses/bulk-update-scores
+PUT /video-responses/{response_id}
+GET /video-responses/{response_id}
+GET /applications/{application_id}/video-responses
+GET /hr/dashboard
+GET /stats
+GET /cat/session/{session_id}/status
+GET /auth/me 
+GET /auth/verify 
+POST /auth/logout 

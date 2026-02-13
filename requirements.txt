@@ -1,0 +1,24 @@
+# Existing dependencies
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+python-multipart
+pydantic[email]
+
+# New dependencies for resume parsing
+PyPDF2>=3.0.0
+python-docx>=0.8.11
+python-dotenv>=1.0.0
+numpy
+scipy
+google-generativeai
+boto3
+psycopg2-binary
+girth
+pandas
+openpyxl
+email-validator
+numpy
+passlib[bcrypt]
+python-jose[cryptography]
