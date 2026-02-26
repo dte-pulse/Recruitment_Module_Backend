@@ -65,3 +65,5 @@ GET /cat/session/{session_id}/status
 GET /auth/me 
 GET /auth/verify 
 POST /auth/logout 
+
+# test ci cd working
