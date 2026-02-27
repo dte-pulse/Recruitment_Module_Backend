@@ -232,11 +232,29 @@ class Application(Base):
     hr_video_exam_email_sent_at = Column(TIMESTAMP, nullable=True)
     hr_exam_completed = Column(Boolean, default=False)
 
+    # Assignment (3-Section) Exam fields
+    assignment_exam_key = Column(String(50), nullable=True)
+    assignment_exam_email_sent = Column(Boolean, default=False)
+    assignment_exam_email_sent_at = Column(TIMESTAMP, nullable=True)
+    section1_completed = Column(Boolean, default=False)
+    section2_completed = Column(Boolean, default=False)
+    section3_completed = Column(Boolean, default=False)
+    section1_theta = Column(Float, nullable=True)
+    section1_percentile = Column(Float, nullable=True)
+    section2_theta = Column(Float, nullable=True)
+    section2_percentile = Column(Float, nullable=True)
+    section3_theta = Column(Float, nullable=True)
+    section3_percentile = Column(Float, nullable=True)
+    assignment_completed = Column(Boolean, default=False)
+
     # Relationships
     job = relationship("Job", back_populates="applications")
     candidate = relationship("User", back_populates="applications", foreign_keys=[candidate_id])
     video_responses = relationship("VideoResponse", back_populates="application", cascade="all, delete-orphan")
     cat_sessions = relationship("CATSession", back_populates="application", cascade="all, delete-orphan")
+    section1_sessions = relationship("Section1Session", back_populates="application", cascade="all, delete-orphan")
+    section2_sessions = relationship("Section2Session", back_populates="application", cascade="all, delete-orphan")
+    section3_sessions = relationship("Section3Session", back_populates="application", cascade="all, delete-orphan")
 
 
 # ============================================================
@@ -459,3 +477,201 @@ class AuditLog(Base):
     old_values = Column(JSON, nullable=True)  # Previous values
     new_values = Column(JSON, nullable=True)  # New values
     created_at = Column(TIMESTAMP, server_default=func.now())
+
+
+# ============================================================
+# SECTION 1 ITEM TABLE
+# ============================================================
+
+
+class Section1Item(Base):
+    __tablename__ = "section1_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    question = Column(Text, nullable=False)
+    option_a = Column(Text, nullable=True)
+    option_b = Column(Text, nullable=True)
+    option_c = Column(Text, nullable=True)
+    option_d = Column(Text, nullable=True)
+    correct = Column(String(1), nullable=False)
+    a = Column(Float, default=1.0)
+    b = Column(Float, default=0.0)
+    c = Column(Float, default=0.25)
+    used_count = Column(Integer, default=0)
+    correct_count = Column(Integer, default=0)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    responses = relationship("Section1Response", back_populates="item", cascade="all, delete-orphan")
+
+
+class Section1Session(Base):
+    __tablename__ = "section1_sessions"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
+    started_at = Column(TIMESTAMP, server_default=func.now())
+    completed_at = Column(TIMESTAMP, nullable=True)
+    current_theta = Column(Float, default=0.0)
+    current_se = Column(Float, nullable=True)
+    num_items_administered = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    final_theta = Column(Float, nullable=True)
+    final_se = Column(Float, nullable=True)
+    final_percentile = Column(Float, nullable=True)
+    num_correct = Column(Integer, nullable=True)
+    accuracy = Column(Float, nullable=True)
+    face_violations = Column(Integer, default=0)
+    tab_violations = Column(Integer, default=0)
+
+    application = relationship("Application", back_populates="section1_sessions")
+    responses = relationship("Section1Response", back_populates="session", cascade="all, delete-orphan")
+
+
+class Section1Response(Base):
+    __tablename__ = "section1_responses"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    session_id = Column(Integer, ForeignKey("section1_sessions.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("section1_items.id"), nullable=False)
+    selected_option = Column(String(1), nullable=False)
+    is_correct = Column(Boolean, nullable=False)
+    response_time_seconds = Column(Integer, nullable=True)
+    theta_before = Column(Float, nullable=False)
+    theta_after = Column(Float, nullable=False)
+    se_after = Column(Float, nullable=False)
+    responded_at = Column(TIMESTAMP, server_default=func.now())
+
+    session = relationship("Section1Session", back_populates="responses")
+    item = relationship("Section1Item", back_populates="responses")
+
+
+# ============================================================
+# SECTION 2 ITEM TABLE
+# ============================================================
+
+
+class Section2Item(Base):
+    __tablename__ = "section2_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    question = Column(Text, nullable=False)
+    option_a = Column(Text, nullable=True)
+    option_b = Column(Text, nullable=True)
+    option_c = Column(Text, nullable=True)
+    option_d = Column(Text, nullable=True)
+    correct = Column(String(1), nullable=False)
+    a = Column(Float, default=1.0)
+    b = Column(Float, default=0.0)
+    c = Column(Float, default=0.25)
+    used_count = Column(Integer, default=0)
+    correct_count = Column(Integer, default=0)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    responses = relationship("Section2Response", back_populates="item", cascade="all, delete-orphan")
+
+
+class Section2Session(Base):
+    __tablename__ = "section2_sessions"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
+    started_at = Column(TIMESTAMP, server_default=func.now())
+    completed_at = Column(TIMESTAMP, nullable=True)
+    current_theta = Column(Float, default=0.0)
+    current_se = Column(Float, nullable=True)
+    num_items_administered = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    final_theta = Column(Float, nullable=True)
+    final_se = Column(Float, nullable=True)
+    final_percentile = Column(Float, nullable=True)
+    num_correct = Column(Integer, nullable=True)
+    accuracy = Column(Float, nullable=True)
+    face_violations = Column(Integer, default=0)
+    tab_violations = Column(Integer, default=0)
+
+    application = relationship("Application", back_populates="section2_sessions")
+    responses = relationship("Section2Response", back_populates="session", cascade="all, delete-orphan")
+
+
+class Section2Response(Base):
+    __tablename__ = "section2_responses"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    session_id = Column(Integer, ForeignKey("section2_sessions.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("section2_items.id"), nullable=False)
+    selected_option = Column(String(1), nullable=False)
+    is_correct = Column(Boolean, nullable=False)
+    response_time_seconds = Column(Integer, nullable=True)
+    theta_before = Column(Float, nullable=False)
+    theta_after = Column(Float, nullable=False)
+    se_after = Column(Float, nullable=False)
+    responded_at = Column(TIMESTAMP, server_default=func.now())
+
+    session = relationship("Section2Session", back_populates="responses")
+    item = relationship("Section2Item", back_populates="responses")
+
+
+# ============================================================
+# SECTION 3 ITEM TABLE
+# ============================================================
+
+
+class Section3Item(Base):
+    __tablename__ = "section3_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    question = Column(Text, nullable=False)
+    option_a = Column(Text, nullable=True)
+    option_b = Column(Text, nullable=True)
+    option_c = Column(Text, nullable=True)
+    option_d = Column(Text, nullable=True)
+    correct = Column(String(1), nullable=False)
+    a = Column(Float, default=1.0)
+    b = Column(Float, default=0.0)
+    c = Column(Float, default=0.25)
+    used_count = Column(Integer, default=0)
+    correct_count = Column(Integer, default=0)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    responses = relationship("Section3Response", back_populates="item", cascade="all, delete-orphan")
+
+
+class Section3Session(Base):
+    __tablename__ = "section3_sessions"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
+    started_at = Column(TIMESTAMP, server_default=func.now())
+    completed_at = Column(TIMESTAMP, nullable=True)
+    current_theta = Column(Float, default=0.0)
+    current_se = Column(Float, nullable=True)
+    num_items_administered = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    final_theta = Column(Float, nullable=True)
+    final_se = Column(Float, nullable=True)
+    final_percentile = Column(Float, nullable=True)
+    num_correct = Column(Integer, nullable=True)
+    accuracy = Column(Float, nullable=True)
+    face_violations = Column(Integer, default=0)
+    tab_violations = Column(Integer, default=0)
+
+    application = relationship("Application", back_populates="section3_sessions")
+    responses = relationship("Section3Response", back_populates="session", cascade="all, delete-orphan")
+
+
+class Section3Response(Base):
+    __tablename__ = "section3_responses"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    session_id = Column(Integer, ForeignKey("section3_sessions.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("section3_items.id"), nullable=False)
+    selected_option = Column(String(1), nullable=False)
+    is_correct = Column(Boolean, nullable=False)
+    response_time_seconds = Column(Integer, nullable=True)
+    theta_before = Column(Float, nullable=False)
+    theta_after = Column(Float, nullable=False)
+    se_after = Column(Float, nullable=False)
+    responded_at = Column(TIMESTAMP, server_default=func.now())
+
+    session = relationship("Section3Session", back_populates="responses")
+    item = relationship("Section3Item", back_populates="responses")

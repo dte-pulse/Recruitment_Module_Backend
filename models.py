@@ -155,6 +155,19 @@ class ApplicationResponse(ApplicationBase):
     hr_video_exam_email_sent: bool = False
     hr_video_exam_email_sent_at: Optional[datetime] = None
     hr_exam_completed: bool = False
+    assignment_exam_key: Optional[str] = None
+    assignment_exam_email_sent: bool = False
+    assignment_exam_email_sent_at: Optional[datetime] = None
+    section1_completed: bool = False
+    section2_completed: bool = False
+    section3_completed: bool = False
+    section1_theta: Optional[float] = None
+    section1_percentile: Optional[float] = None
+    section2_theta: Optional[float] = None
+    section2_percentile: Optional[float] = None
+    section3_theta: Optional[float] = None
+    section3_percentile: Optional[float] = None
+    assignment_completed: bool = False
 
 
 # ============================================================
@@ -589,3 +602,129 @@ class VideoResponseBatchResponse(ORMModel):
     total_evaluated: int
     average_score: float
     responses: List[VideoResponseDetail]
+
+
+# ============================================================
+# Section Item Schemas (shared across sections 1-3)
+# ============================================================
+
+
+class SectionItemSchema(ORMModel):
+    id: int
+    question: str
+    option_a: Optional[str] = None
+    option_b: Optional[str] = None
+    option_c: Optional[str] = None
+    option_d: Optional[str] = None
+    correct: str
+    a: Optional[float] = 1.0
+    b: Optional[float] = 0.0
+    c: Optional[float] = 0.25
+    used_count: Optional[int] = 0
+    correct_count: Optional[int] = 0
+    created_at: Optional[datetime] = None
+
+
+class SectionItemCreate(ORMModel):
+    question: str
+    option_a: str
+    option_b: str
+    option_c: str
+    option_d: str
+    correct: str
+    a: float = 1.0
+    b: float = 0.0
+    c: float = 0.25
+
+
+class SectionItemUpdate(ORMModel):
+    question: Optional[str] = None
+    option_a: Optional[str] = None
+    option_b: Optional[str] = None
+    option_c: Optional[str] = None
+    option_d: Optional[str] = None
+    correct: Optional[str] = None
+    a: Optional[float] = None
+    b: Optional[float] = None
+    c: Optional[float] = None
+
+
+# ============================================================
+# Assignment Exam Schemas
+# ============================================================
+
+
+class AssignmentExamStart(ORMModel):
+    email: EmailStr
+    assignment_exam_key: str
+
+
+class AssignmentStartResponse(ORMModel):
+    application_id: int
+    candidate_name: str
+    job_title: str
+    section1_session_id: int
+    section2_session_id: int
+    section3_session_id: int
+    section1_completed: bool = False
+    section2_completed: bool = False
+    section3_completed: bool = False
+
+
+class AssignmentSectionNextItemResponse(ORMModel):
+    item_id: int
+    question: str
+    option_a: str
+    option_b: str
+    option_c: str
+    option_d: str
+    item_number: int
+    total_items_so_far: int
+    should_continue: bool
+
+
+class AssignmentAnswerSubmit(ORMModel):
+    session_id: int
+    item_id: int
+    selected_option: str
+    response_time_seconds: Optional[int] = None
+    face_violations: Optional[int] = 0
+    tab_switch_violations: Optional[int] = 0
+
+
+class AssignmentAnswerResponse(ORMModel):
+    is_correct: bool
+    current_theta: float
+    current_se: float
+    items_completed: int
+    should_continue: bool
+
+
+class AssignmentSectionComplete(ORMModel):
+    session_id: int
+    face_violations: Optional[int] = 0
+    tab_violations: Optional[int] = 0
+
+
+class AssignmentSectionResults(ORMModel):
+    session_id: int
+    section: int
+    theta: float
+    se: float
+    percentile: float
+    num_items: int
+    num_correct: int
+    accuracy: float
+    ability_level: str
+    completed_at: Optional[datetime] = None
+
+
+class AssignmentFinalResults(ORMModel):
+    application_id: int
+    candidate_name: str
+    job_title: str
+    section1: Optional[AssignmentSectionResults] = None
+    section2: Optional[AssignmentSectionResults] = None
+    section3: Optional[AssignmentSectionResults] = None
+    overall_theta: Optional[float] = None
+    overall_percentile: Optional[float] = None

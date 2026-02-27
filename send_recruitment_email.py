@@ -186,6 +186,97 @@ def send_recruitment_email(
 
 
 
+    elif stage == "assignment":
+        subject = f"Second Round Assignment Exam – {job_title} | {FROM_NAME}"
+        html_body = f"""
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: 'Segoe UI', Arial, sans-serif; color: #2c3e50; line-height: 1.8; max-width: 680px; margin: auto; background:#f8fafc; padding:20px;">
+            <div style="background:white; border-radius:16px; padding:45px; box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+
+              <div style="text-align:center; padding-bottom:20px; border-bottom:4px solid #8e44ad;">
+                <h1 style="color:#8e44ad; margin:0; font-size:30px;">{FROM_NAME}</h1>
+                <p style="color:#7f8c8d; margin:8px 0 0;">Second Round – Assignment Exam</p>
+              </div>
+
+              <h2 style="color:#2c3e50; margin-top:30px;">Hello {candidate_name},</h2>
+              <p style="font-size:16px;">
+                Congratulations on progressing to the next stage! You have been selected to take the
+                <strong>Second Round Assignment Exam</strong> for the role of <strong>{job_title}</strong>.
+              </p>
+
+              <!-- Assignment Key -->
+              <div style="background:linear-gradient(135deg, #8e44ad, #6c3483); color:white; padding:28px; border-radius:12px; margin:30px 0; text-align:center;">
+                <h3 style="margin:0 0 10px 0; font-size:18px; opacity:0.9;">Your Assignment Access Key</h3>
+                <div style="background:rgba(255,255,255,0.15); display:inline-block; padding:14px 32px; border-radius:10px;
+                     font-family:'Courier New', monospace; font-size:26px; letter-spacing:5px; border:2px solid rgba(255,255,255,0.4); word-break:break-all;">
+                  <strong>{key}</strong>
+                </div>
+                <p style="margin:12px 0 0; font-size:13px; opacity:0.85;">
+                  Keep this key confidential &bull; Do not share with anyone
+                </p>
+              </div>
+
+              <!-- Login Button -->
+              <div style="text-align:center; margin:30px 0;">
+                <a href="{exam_url}" style="background:#8e44ad; color:white; padding:16px 48px; text-decoration:none;
+                     border-radius:50px; font-weight:bold; font-size:18px; display:inline-block;">
+                  Login to Take Assignment
+                </a>
+              </div>
+
+              <!-- Exam Structure -->
+              <div style="background:#f8f0ff; padding:25px; border-radius:12px; border-left:5px solid #8e44ad; margin:25px 0;">
+                <h3 style="margin:0 0 15px 0; color:#6c3483;">📋 Exam Structure – 3 Sections</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                  <tr style="background:#8e44ad; color:white;">
+                    <th style="padding:10px 14px; text-align:left; border-radius:8px 0 0 0;">Section</th>
+                    <th style="padding:10px 14px; text-align:left;">Topic</th>
+                    <th style="padding:10px 14px; text-align:left; border-radius:0 8px 0 0;">Focus</th>
+                  </tr>
+                  <tr style="background:#fdf6ff;">
+                    <td style="padding:10px 14px; font-weight:bold; color:#8e44ad;">Section 1</td>
+                    <td style="padding:10px 14px;">Aptitude & Reasoning</td>
+                    <td style="padding:10px 14px;">Quantitative, Logical, Analytical</td>
+                  </tr>
+                  <tr style="background:#f8f0ff;">
+                    <td style="padding:10px 14px; font-weight:bold; color:#8e44ad;">Section 2</td>
+                    <td style="padding:10px 14px;">English Grammar</td>
+                    <td style="padding:10px 14px;">Grammar, Vocabulary, Comprehension</td>
+                  </tr>
+                  <tr style="background:#fdf6ff;">
+                    <td style="padding:10px 14px; font-weight:bold; color:#8e44ad;">Section 3</td>
+                    <td style="padding:10px 14px;">Finance & AI</td>
+                    <td style="padding:10px 14px;">Financial Concepts, AI/ML Basics</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Instructions -->
+              <div style="background:#fff8e1; padding:20px; border-left:5px solid #f39c12; margin:25px 0; border-radius:8px;">
+                <h4 style="margin:0 0 12px 0; color:#e67e22;">📌 Important Instructions</h4>
+                <ol style="margin:0; padding-left:20px; color:#2c3e50;">
+                  <li>Complete all 3 sections in order — you cannot skip a section</li>
+                  <li>Each section uses adaptive difficulty — questions adjust to your level</li>
+                  <li>You cannot go back to a previous question within a section</li>
+                  <li>Use a stable internet connection and laptop/desktop</li>
+                  <li><strong>Deadline: {deadline_date}</strong></li>
+                </ol>
+              </div>
+
+              <p style="color:#7f8c8d; font-size:14px;">Best of luck! Show us your best!</p>
+
+              <img src="cid:{FOOTER_CID}" alt="PulsePharma" style="max-width:100%; height:auto; margin-top:40px; border-radius:12px;">
+            </div>
+          </body>
+        </html>
+        """
+
+
+
     elif stage == "applied":
         subject = f"Application Received – Thank You, {candidate_name.split()[0]}!"
         html_body = f"""

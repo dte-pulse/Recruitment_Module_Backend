@@ -59,6 +59,15 @@ from models import (
     VideoResponseBulkUpdateItem,
     ExamValidation,
     ExamValidationResponse,
+    SectionItemSchema,
+    AssignmentExamStart,
+    AssignmentStartResponse,
+    AssignmentSectionNextItemResponse,
+    AssignmentAnswerSubmit,
+    AssignmentAnswerResponse,
+    AssignmentSectionComplete,
+    AssignmentSectionResults,
+    AssignmentFinalResults,
 )
 from scoring_service import ScoringService
 from resume_parser import ResumeParser
@@ -636,6 +645,29 @@ def bulk_update_status_simple(
                         email_sent_successfully = True
 
                 print(f"Generated CAT Key → {exam_key} | Email: {'Sent' if email_sent_successfully else 'Failed/Skipped'}")
+
+            # ——— Assignment Stage ———
+            elif new_stage == "assignment" and old_stage != "assignment":
+                assignment_key = "".join(secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(8))
+                app.assignment_exam_key = assignment_key
+                app.current_stage = "assignment"
+                app.assignment_exam_email_sent = False
+
+                if send_email and app.email:
+                    success = send_recruitment_email(
+                        candidate_name=app.full_name,
+                        candidate_email=app.email.strip(),
+                        stage="assignment",
+                        key=assignment_key,
+                        job_title=job_title,
+                        exam_url="https://pulsehrapp.netlify.app/exam/login"
+                    )
+                    if success:
+                        app.assignment_exam_email_sent = True
+                        app.assignment_exam_email_sent_at = current_time
+                        email_sent_successfully = True
+
+                print(f"Generated Assignment Key → {assignment_key} | Email: {'Sent' if email_sent_successfully else 'Failed/Skipped'}")
 
             # ——— Video HR Stage ———
             elif new_stage == "video hr" and old_stage != "video hr":
@@ -1588,6 +1620,37 @@ def get_application_video_responses(
         database_models.VideoResponse.application_id == application_id
     ).all()
     return responses
+
+
+@app.get("/jobs/{job_id}/bulk-video-responses")
+def get_bulk_video_responses(
+    job_id: int, 
+    db: Session = Depends(get_db), 
+    token: auth.TokenData = Depends(auth.get_current_admin)
+):
+    """Get all video responses for a specific job grouped by application"""
+    job = db.query(database_models.Job).filter(
+        database_models.Job.id == job_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    responses = (
+        db.query(database_models.VideoResponse)
+        .join(database_models.Application, database_models.VideoResponse.application_id == database_models.Application.id)
+        .filter(database_models.Application.job_id == job_id)
+        .all()
+    )
+
+    result = {}
+    for r in responses:
+        app_id = r.application_id
+        if app_id not in result:
+            result[app_id] = []
+        result[app_id].append(r)
+        
+    return result
 # ============================================================
 # AI EVALUATION HELPER (ASYNC)
 # ============================================================
@@ -3023,6 +3086,639 @@ def list_job_video_questions(
     if job_id:
         query = query.filter(database_models.JobVideoQuestion.job_id == job_id)
     return query.all()
+
+
+# ============================================================
+# SECTION QUESTION BANK CRUD (×3 sections)
+# ============================================================
+
+# Helper: Map section number → (ItemModel, SessionModel, ResponseModel)
+SECTION_MODELS = {
+    1: {
+        "item": database_models.Section1Item,
+        "session": database_models.Section1Session,
+        "response": database_models.Section1Response,
+    },
+    2: {
+        "item": database_models.Section2Item,
+        "session": database_models.Section2Session,
+        "response": database_models.Section2Response,
+    },
+    3: {
+        "item": database_models.Section3Item,
+        "session": database_models.Section3Session,
+        "response": database_models.Section3Response,
+    },
+}
+
+
+# ——— Section 1 CRUD ———
+@app.get("/section1-items", response_model=List[SectionItemSchema])
+def get_section1_items(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    return db.query(database_models.Section1Item).offset(skip).limit(limit).all()
+
+
+@app.post("/section1-items", response_model=SectionItemSchema, status_code=status.HTTP_201_CREATED)
+def create_section1_item(
+    question: str, option_a: str, option_b: str, option_c: str, option_d: str,
+    correct: str, a: float = 1.0, b: float = 0.0, c: float = 0.25,
+    db: Session = Depends(get_db),
+):
+    item = database_models.Section1Item(
+        question=question, option_a=option_a, option_b=option_b,
+        option_c=option_c, option_d=option_d, correct=correct.upper(),
+        a=a, b=b, c=c,
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.put("/section1-items/{item_id}", response_model=SectionItemSchema)
+def update_section1_item(
+    item_id: int, question: Optional[str] = None, option_a: Optional[str] = None,
+    option_b: Optional[str] = None, option_c: Optional[str] = None,
+    option_d: Optional[str] = None, correct: Optional[str] = None,
+    a: Optional[float] = None, b: Optional[float] = None, c: Optional[float] = None,
+    db: Session = Depends(get_db),
+):
+    item = db.query(database_models.Section1Item).filter(database_models.Section1Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 1 item not found")
+    updates = {k: v for k, v in {"question": question, "option_a": option_a, "option_b": option_b, "option_c": option_c, "option_d": option_d, "correct": correct.upper() if correct else None, "a": a, "b": b, "c": c}.items() if v is not None}
+    for k, v in updates.items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.delete("/section1-items/{item_id}")
+def delete_section1_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(database_models.Section1Item).filter(database_models.Section1Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 1 item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Section 1 item deleted successfully"}
+
+
+@app.post("/section1/upload-questions")
+async def upload_section1_questions(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Bulk upload Section 1 questions from Excel"""
+    contents = await file.read()
+    df = pd.read_excel(BytesIO(contents))
+    required = {"question", "option_a", "option_b", "option_c", "option_d", "correct"}
+    if not required.issubset(set(c.lower().replace(" ", "_") for c in df.columns)):
+        raise HTTPException(status_code=400, detail=f"Missing columns. Required: {required}")
+    df.columns = [c.lower().replace(" ", "_") for c in df.columns]
+    count = 0
+    for _, row in df.iterrows():
+        item = database_models.Section1Item(
+            question=str(row["question"]), option_a=str(row["option_a"]),
+            option_b=str(row["option_b"]), option_c=str(row["option_c"]),
+            option_d=str(row["option_d"]), correct=str(row["correct"]).upper(),
+            a=float(row.get("a", 1.0) if pd.notna(row.get("a", None)) else 1.0),
+            b=float(row.get("b", 0.0) if pd.notna(row.get("b", None)) else 0.0),
+            c=float(row.get("c", 0.25) if pd.notna(row.get("c", None)) else 0.25),
+        )
+        db.add(item)
+        count += 1
+    db.commit()
+    return {"message": f"Uploaded {count} questions to Section 1"}
+
+
+# ——— Section 2 CRUD ———
+@app.get("/section2-items", response_model=List[SectionItemSchema])
+def get_section2_items(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    return db.query(database_models.Section2Item).offset(skip).limit(limit).all()
+
+
+@app.post("/section2-items", response_model=SectionItemSchema, status_code=status.HTTP_201_CREATED)
+def create_section2_item(
+    question: str, option_a: str, option_b: str, option_c: str, option_d: str,
+    correct: str, a: float = 1.0, b: float = 0.0, c: float = 0.25,
+    db: Session = Depends(get_db),
+):
+    item = database_models.Section2Item(
+        question=question, option_a=option_a, option_b=option_b,
+        option_c=option_c, option_d=option_d, correct=correct.upper(),
+        a=a, b=b, c=c,
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.put("/section2-items/{item_id}", response_model=SectionItemSchema)
+def update_section2_item(
+    item_id: int, question: Optional[str] = None, option_a: Optional[str] = None,
+    option_b: Optional[str] = None, option_c: Optional[str] = None,
+    option_d: Optional[str] = None, correct: Optional[str] = None,
+    a: Optional[float] = None, b: Optional[float] = None, c: Optional[float] = None,
+    db: Session = Depends(get_db),
+):
+    item = db.query(database_models.Section2Item).filter(database_models.Section2Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 2 item not found")
+    updates = {k: v for k, v in {"question": question, "option_a": option_a, "option_b": option_b, "option_c": option_c, "option_d": option_d, "correct": correct.upper() if correct else None, "a": a, "b": b, "c": c}.items() if v is not None}
+    for k, v in updates.items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.delete("/section2-items/{item_id}")
+def delete_section2_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(database_models.Section2Item).filter(database_models.Section2Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 2 item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Section 2 item deleted successfully"}
+
+
+@app.post("/section2/upload-questions")
+async def upload_section2_questions(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Bulk upload Section 2 questions from Excel"""
+    contents = await file.read()
+    df = pd.read_excel(BytesIO(contents))
+    required = {"question", "option_a", "option_b", "option_c", "option_d", "correct"}
+    if not required.issubset(set(c.lower().replace(" ", "_") for c in df.columns)):
+        raise HTTPException(status_code=400, detail=f"Missing columns. Required: {required}")
+    df.columns = [c.lower().replace(" ", "_") for c in df.columns]
+    count = 0
+    for _, row in df.iterrows():
+        item = database_models.Section2Item(
+            question=str(row["question"]), option_a=str(row["option_a"]),
+            option_b=str(row["option_b"]), option_c=str(row["option_c"]),
+            option_d=str(row["option_d"]), correct=str(row["correct"]).upper(),
+            a=float(row.get("a", 1.0) if pd.notna(row.get("a", None)) else 1.0),
+            b=float(row.get("b", 0.0) if pd.notna(row.get("b", None)) else 0.0),
+            c=float(row.get("c", 0.25) if pd.notna(row.get("c", None)) else 0.25),
+        )
+        db.add(item)
+        count += 1
+    db.commit()
+    return {"message": f"Uploaded {count} questions to Section 2"}
+
+
+# ——— Section 3 CRUD ———
+@app.get("/section3-items", response_model=List[SectionItemSchema])
+def get_section3_items(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    return db.query(database_models.Section3Item).offset(skip).limit(limit).all()
+
+
+@app.post("/section3-items", response_model=SectionItemSchema, status_code=status.HTTP_201_CREATED)
+def create_section3_item(
+    question: str, option_a: str, option_b: str, option_c: str, option_d: str,
+    correct: str, a: float = 1.0, b: float = 0.0, c: float = 0.25,
+    db: Session = Depends(get_db),
+):
+    item = database_models.Section3Item(
+        question=question, option_a=option_a, option_b=option_b,
+        option_c=option_c, option_d=option_d, correct=correct.upper(),
+        a=a, b=b, c=c,
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.put("/section3-items/{item_id}", response_model=SectionItemSchema)
+def update_section3_item(
+    item_id: int, question: Optional[str] = None, option_a: Optional[str] = None,
+    option_b: Optional[str] = None, option_c: Optional[str] = None,
+    option_d: Optional[str] = None, correct: Optional[str] = None,
+    a: Optional[float] = None, b: Optional[float] = None, c: Optional[float] = None,
+    db: Session = Depends(get_db),
+):
+    item = db.query(database_models.Section3Item).filter(database_models.Section3Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 3 item not found")
+    updates = {k: v for k, v in {"question": question, "option_a": option_a, "option_b": option_b, "option_c": option_c, "option_d": option_d, "correct": correct.upper() if correct else None, "a": a, "b": b, "c": c}.items() if v is not None}
+    for k, v in updates.items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@app.delete("/section3-items/{item_id}")
+def delete_section3_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(database_models.Section3Item).filter(database_models.Section3Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Section 3 item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Section 3 item deleted successfully"}
+
+
+@app.post("/section3/upload-questions")
+async def upload_section3_questions(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Bulk upload Section 3 questions from Excel"""
+    contents = await file.read()
+    df = pd.read_excel(BytesIO(contents))
+    required = {"question", "option_a", "option_b", "option_c", "option_d", "correct"}
+    if not required.issubset(set(c.lower().replace(" ", "_") for c in df.columns)):
+        raise HTTPException(status_code=400, detail=f"Missing columns. Required: {required}")
+    df.columns = [c.lower().replace(" ", "_") for c in df.columns]
+    count = 0
+    for _, row in df.iterrows():
+        item = database_models.Section3Item(
+            question=str(row["question"]), option_a=str(row["option_a"]),
+            option_b=str(row["option_b"]), option_c=str(row["option_c"]),
+            option_d=str(row["option_d"]), correct=str(row["correct"]).upper(),
+            a=float(row.get("a", 1.0) if pd.notna(row.get("a", None)) else 1.0),
+            b=float(row.get("b", 0.0) if pd.notna(row.get("b", None)) else 0.0),
+            c=float(row.get("c", 0.25) if pd.notna(row.get("c", None)) else 0.25),
+        )
+        db.add(item)
+        count += 1
+    db.commit()
+    return {"message": f"Uploaded {count} questions to Section 3"}
+
+
+# ============================================================
+# ASSIGNMENT EXAM FLOW (3-section adaptive exam)
+# ============================================================
+
+
+@app.post("/assignment/start", response_model=AssignmentStartResponse)
+def start_assignment_exam(exam_start: AssignmentExamStart, db: Session = Depends(get_db)):
+    """
+    Validate assignment_exam_key and create/resume sessions for all 3 sections.
+    """
+    application = (
+        db.query(database_models.Application)
+        .filter(
+            database_models.Application.email == exam_start.email.lower(),
+            database_models.Application.assignment_exam_key == exam_start.assignment_exam_key,
+        )
+        .first()
+    )
+    if not application:
+        raise HTTPException(status_code=401, detail="Invalid email or assignment key")
+
+    if application.assignment_completed:
+        raise HTTPException(status_code=400, detail="You have already completed this assignment")
+
+    job = db.query(database_models.Job).filter(database_models.Job.id == application.job_id).first()
+
+    # Create or resume sessions for each section
+    session_ids = {}
+    for n in [1, 2, 3]:
+        models = SECTION_MODELS[n]
+        SessionModel = models["session"]
+        existing = (
+            db.query(SessionModel)
+            .filter(SessionModel.application_id == application.id, SessionModel.is_active == True)
+            .first()
+        )
+        if not existing:
+            # Check if section already completed (inactive session exists)
+            completed_session = (
+                db.query(SessionModel)
+                .filter(SessionModel.application_id == application.id, SessionModel.is_active == False)
+                .first()
+            )
+            if completed_session:
+                session_ids[n] = completed_session.id
+            else:
+                new_session = SessionModel(
+                    application_id=application.id,
+                    current_theta=0.0,
+                    current_se=None,
+                    num_items_administered=0,
+                    is_active=True,
+                )
+                db.add(new_session)
+                db.commit()
+                db.refresh(new_session)
+                session_ids[n] = new_session.id
+        else:
+            session_ids[n] = existing.id
+
+    return AssignmentStartResponse(
+        application_id=application.id,
+        candidate_name=application.full_name,
+        job_title=job.title if job else "Position",
+        section1_session_id=session_ids[1],
+        section2_session_id=session_ids[2],
+        section3_session_id=session_ids[3],
+        section1_completed=application.section1_completed,
+        section2_completed=application.section2_completed,
+        section3_completed=application.section3_completed,
+    )
+
+
+@app.post("/assignment/section/{section_num}/next-item", response_model=AssignmentSectionNextItemResponse)
+def get_assignment_next_item(section_num: int, session_id: int, db: Session = Depends(get_db)):
+    """Get next adaptive question from the given section."""
+    if section_num not in SECTION_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid section number (1-3)")
+
+    models = SECTION_MODELS[section_num]
+    ItemModel = models["item"]
+    SessionModel = models["session"]
+    ResponseModel = models["response"]
+
+    session = db.query(SessionModel).filter(SessionModel.id == session_id, SessionModel.is_active == True).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Section {section_num} session not found or already completed")
+
+    all_items = db.query(ItemModel).all()
+    if not all_items:
+        raise HTTPException(status_code=500, detail=f"No items in Section {section_num}")
+
+    cat_items = [
+        CATItemClass(
+            id=item.id, question=item.question,
+            option_a=item.option_a, option_b=item.option_b,
+            option_c=item.option_c, option_d=item.option_d,
+            correct=item.correct, a=item.a, b=item.b, c=item.c,
+        ) for item in all_items
+    ]
+
+    engine = CATEngine(items=cat_items, initial_theta=session.current_theta)
+    engine.current_theta = session.current_theta
+
+    administered = db.query(ResponseModel).filter(ResponseModel.session_id == session.id).all()
+    engine.administered_items = [r.item_id for r in administered]
+    for resp in administered:
+        engine.responses.append(CATResponse(
+            item_id=resp.item_id, selected_option=resp.selected_option,
+            is_correct=resp.is_correct, theta_before=resp.theta_before,
+            theta_after=resp.theta_after, se_after=resp.se_after,
+        ))
+
+    if not engine.should_continue():
+        raise HTTPException(status_code=400, detail=f"Section {section_num} exam complete")
+
+    next_item = engine.select_next_item()
+    if not next_item:
+        raise HTTPException(status_code=500, detail="No suitable item")
+
+    return AssignmentSectionNextItemResponse(
+        item_id=next_item.id, question=next_item.question,
+        option_a=next_item.option_a, option_b=next_item.option_b,
+        option_c=next_item.option_c, option_d=next_item.option_d,
+        item_number=len(engine.administered_items) + 1,
+        total_items_so_far=len(engine.administered_items),
+        should_continue=True,
+    )
+
+
+@app.post("/assignment/section/{section_num}/submit-answer", response_model=AssignmentAnswerResponse)
+def submit_assignment_answer(section_num: int, answer: AssignmentAnswerSubmit, db: Session = Depends(get_db)):
+    """Submit answer to a section question and update theta."""
+    if section_num not in SECTION_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid section number (1-3)")
+
+    if not answer.selected_option or answer.selected_option.upper() not in ["A", "B", "C", "D"]:
+        raise HTTPException(status_code=400, detail="Invalid option. Must be A, B, C, or D")
+
+    models = SECTION_MODELS[section_num]
+    ItemModel = models["item"]
+    SessionModel = models["session"]
+    ResponseModel = models["response"]
+
+    session = db.query(SessionModel).filter(SessionModel.id == answer.session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if not session.is_active:
+        raise HTTPException(status_code=400, detail="Session is no longer active")
+
+    item = db.query(ItemModel).filter(ItemModel.id == answer.item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    existing = db.query(ResponseModel).filter(
+        ResponseModel.session_id == answer.session_id,
+        ResponseModel.item_id == answer.item_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Already answered")
+
+    all_items = db.query(ItemModel).all()
+    cat_items = [
+        CATItemClass(
+            id=it.id, question=it.question,
+            option_a=it.option_a, option_b=it.option_b,
+            option_c=it.option_c, option_d=it.option_d,
+            correct=it.correct, a=it.a, b=it.b, c=it.c,
+        ) for it in all_items
+    ]
+
+    engine = CATEngine(items=cat_items, initial_theta=session.current_theta)
+    engine.current_theta = session.current_theta
+
+    previous = db.query(ResponseModel).filter(ResponseModel.session_id == answer.session_id).all()
+    engine.administered_items = [r.item_id for r in previous]
+    for resp in previous:
+        engine.responses.append(CATResponse(
+            item_id=resp.item_id, selected_option=resp.selected_option,
+            is_correct=resp.is_correct, theta_before=resp.theta_before,
+            theta_after=resp.theta_after, se_after=resp.se_after,
+        ))
+
+    result = engine.process_response(answer.item_id, answer.selected_option)
+
+    response_record = ResponseModel(
+        session_id=answer.session_id,
+        item_id=answer.item_id,
+        selected_option=answer.selected_option.upper(),
+        is_correct=bool(result["is_correct"]),
+        response_time_seconds=int(answer.response_time_seconds) if answer.response_time_seconds else None,
+        theta_before=float(session.current_theta) if session.current_theta is not None else 0.0,
+        theta_after=float(result["theta"]),
+        se_after=float(result["se"]),
+    )
+    db.add(response_record)
+
+    session.current_theta = float(result["theta"])
+    session.current_se = float(result["se"])
+    session.num_items_administered = int(result["num_items"])
+
+    if answer.face_violations:
+        session.face_violations = max(session.face_violations or 0, answer.face_violations)
+    if answer.tab_switch_violations:
+        session.tab_violations = max(session.tab_violations or 0, answer.tab_switch_violations)
+
+    item.used_count = (item.used_count or 0) + 1
+    if result["is_correct"]:
+        item.correct_count = (item.correct_count or 0) + 1
+
+    db.commit()
+    db.refresh(session)
+
+    return AssignmentAnswerResponse(
+        is_correct=result["is_correct"],
+        current_theta=result["theta"],
+        current_se=result["se"],
+        items_completed=result["num_items"],
+        should_continue=engine.should_continue(),
+    )
+
+
+@app.post("/assignment/section/{section_num}/complete", response_model=AssignmentSectionResults)
+def complete_assignment_section(section_num: int, complete: AssignmentSectionComplete, db: Session = Depends(get_db)):
+    """Complete a section and calculate results."""
+    if section_num not in SECTION_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid section number (1-3)")
+
+    models = SECTION_MODELS[section_num]
+    ItemModel = models["item"]
+    SessionModel = models["session"]
+    ResponseModel = models["response"]
+
+    session = db.query(SessionModel).filter(
+        SessionModel.id == complete.session_id, SessionModel.is_active == True,
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found or already completed")
+
+    all_items = db.query(ItemModel).all()
+    cat_items = [
+        CATItemClass(
+            id=it.id, question=it.question,
+            option_a=it.option_a, option_b=it.option_b,
+            option_c=it.option_c, option_d=it.option_d,
+            correct=it.correct, a=it.a, b=it.b, c=it.c,
+        ) for it in all_items
+    ]
+
+    engine = CATEngine(items=cat_items, initial_theta=session.current_theta)
+    engine.current_theta = session.current_theta
+
+    responses = db.query(ResponseModel).filter(ResponseModel.session_id == session.id).all()
+    engine.administered_items = [r.item_id for r in responses]
+    for resp in responses:
+        engine.responses.append(CATResponse(
+            item_id=resp.item_id, selected_option=resp.selected_option,
+            is_correct=resp.is_correct, theta_before=resp.theta_before,
+            theta_after=resp.theta_after, se_after=resp.se_after,
+        ))
+
+    results = engine.get_final_results()
+
+    session.completed_at = datetime.now()
+    session.is_active = False
+    session.final_theta = float(results["theta"])
+    session.final_se = float(results["se"])
+    session.final_percentile = float(results["percentile"])
+    session.num_correct = int(results["num_correct"])
+    session.accuracy = float(results["accuracy"])
+
+    if complete.face_violations:
+        session.face_violations = max(session.face_violations or 0, complete.face_violations)
+    if complete.tab_violations:
+        session.tab_violations = max(session.tab_violations or 0, complete.tab_violations)
+
+    # Update application section fields
+    application = db.query(database_models.Application).filter(
+        database_models.Application.id == session.application_id,
+    ).first()
+
+    if application:
+        setattr(application, f"section{section_num}_completed", True)
+        setattr(application, f"section{section_num}_theta", float(results["theta"]))
+        setattr(application, f"section{section_num}_percentile", float(results["percentile"]))
+
+        # Check if all 3 sections completed
+        if application.section1_completed and application.section2_completed and application.section3_completed:
+            application.assignment_completed = True
+
+    db.commit()
+
+    return AssignmentSectionResults(
+        session_id=session.id,
+        section=section_num,
+        theta=results["theta"],
+        se=results["se"],
+        percentile=results["percentile"],
+        num_items=results["num_items"],
+        num_correct=results["num_correct"],
+        accuracy=results["accuracy"],
+        ability_level=results["ability_level"],
+        completed_at=session.completed_at,
+    )
+
+
+@app.get("/assignment/results/{application_id}", response_model=AssignmentFinalResults)
+def get_assignment_results(application_id: int, db: Session = Depends(get_db)):
+    """Get combined results for all 3 sections."""
+    application = db.query(database_models.Application).filter(
+        database_models.Application.id == application_id,
+    ).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    job = db.query(database_models.Job).filter(database_models.Job.id == application.job_id).first()
+
+    section_results = {}
+    for n in [1, 2, 3]:
+        SessionModel = SECTION_MODELS[n]["session"]
+        session = (
+            db.query(SessionModel)
+            .filter(SessionModel.application_id == application_id, SessionModel.is_active == False)
+            .first()
+        )
+        if session and session.final_theta is not None:
+            section_results[n] = AssignmentSectionResults(
+                session_id=session.id,
+                section=n,
+                theta=session.final_theta,
+                se=session.final_se or 0.0,
+                percentile=session.final_percentile or 0.0,
+                num_items=session.num_items_administered or 0,
+                num_correct=session.num_correct or 0,
+                accuracy=session.accuracy or 0.0,
+                ability_level=CATEngine(items=[], initial_theta=session.final_theta)._interpret_theta(session.final_theta),
+                completed_at=session.completed_at,
+            )
+
+    # Calculate overall
+    thetas = [sr.theta for sr in section_results.values()]
+    overall_theta = sum(thetas) / len(thetas) if thetas else None
+    from scipy.stats import norm
+    overall_percentile = norm.cdf(overall_theta) * 100 if overall_theta is not None else None
+
+    return AssignmentFinalResults(
+        application_id=application.id,
+        candidate_name=application.full_name,
+        job_title=job.title if job else "Position",
+        section1=section_results.get(1),
+        section2=section_results.get(2),
+        section3=section_results.get(3),
+        overall_theta=round(overall_theta, 2) if overall_theta is not None else None,
+        overall_percentile=round(overall_percentile, 1) if overall_percentile is not None else None,
+    )
+
+
+@app.get("/assignment/session/{session_id}/status")
+def get_assignment_session_status(session_id: int, section_num: int = 1, db: Session = Depends(get_db)):
+    """Check session progress for a specific section."""
+    if section_num not in SECTION_MODELS:
+        raise HTTPException(status_code=400, detail="Invalid section number")
+    SessionModel = SECTION_MODELS[section_num]["session"]
+    session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {
+        "session_id": session.id,
+        "section": section_num,
+        "is_active": session.is_active,
+        "current_theta": session.current_theta,
+        "current_se": session.current_se,
+        "num_items_administered": session.num_items_administered,
+        "started_at": session.started_at,
+        "completed_at": session.completed_at,
+    }
 
 
 if __name__ == "__main__":
