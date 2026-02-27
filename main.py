@@ -287,7 +287,7 @@ ALLOWED_ORIGINS = [
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://pulse-recruitment.netlify.app","http://localhost:5173"],
+    allow_origins=["https://hr-module-pavan-branch.netlify.app","http://localhost:5173","https://recruit.pulsepharma.net"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
