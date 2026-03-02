@@ -399,10 +399,6 @@ async def login(email: str = Form(...), password: str = Form(...), response: Res
     Simplified Admin Login Endpoint
     Validates email and password against .env credentials.
     Returns JWT token with role='hr' and sets 7-day cookie.
-    
-    Credentials from .env:
-    - ADMIN_EMAIL = admin@pulsepharma.com
-    - ADMIN_PASSWORD = pavan@123
     """
     
     # Verify credentials against .env
