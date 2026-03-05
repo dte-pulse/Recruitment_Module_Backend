@@ -633,7 +633,7 @@ def bulk_update_status_simple(
                         stage="aptitude",
                         key=exam_key,
                         job_title=job_title,
-                        exam_url="https://pulsehrapp.netlify.app/exam/login"
+                        exam_url="https://recruit.pulsepharma.net/exam/login"
                     )
                     if success:
                         app.cat_exam_email_sent = True
@@ -656,7 +656,7 @@ def bulk_update_status_simple(
                         stage="assignment",
                         key=assignment_key,
                         job_title=job_title,
-                        exam_url="https://pulsehrapp.netlify.app/exam/login"
+                        exam_url="https://recruit.pulsepharma.net/exam/login"
                     )
                     if success:
                         app.assignment_exam_email_sent = True
@@ -679,7 +679,7 @@ def bulk_update_status_simple(
                         stage="video_hr",
                         key=exam_key,
                         job_title=job_title,
-                        exam_url="https://pulsehrapp.netlify.app/hr-video-exam"
+                        exam_url="https://recruit.pulsepharma.net/hr-video-exam"
                     )
                     if success:
                         app.hr_video_exam_email_sent = True
